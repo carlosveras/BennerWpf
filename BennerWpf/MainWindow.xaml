@@ -1,0 +1,14 @@
+﻿<Window x:Class="BennerWpf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Sistema de Vendas" Height="300" Width="400">
+    <Grid>
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="200">
+            <Button Content="Cadastro de Pessoas" Click="AbrirPessoas_Click" Height="40" Margin="0,0,0,10"/>
+            <Button Content="Cadastro de Produtos" Click="AbrirProdutos_Click" Height="40" Margin="0,0,0,10"/>
+            <Button Content="Cadastro de Pedidos" Click="AbrirPedidos_Click" Height="40" Margin="0,0,0,10"/>
+            <Button Content="Sair" Click="Sair_Click" Height="40"/>
+        </StackPanel>
+    </Grid>
+</Window>
+
