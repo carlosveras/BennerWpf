@@ -20,10 +20,11 @@ public partial class PessoaView : Window
         {
             var pedidoWindow = new PedidoView();
             var pedidoVM = pedidoWindow.DataContext as PedidoViewModel;
-            pedidoVM.PessoaSelecionada = vm.PessoaSelecionada;
+
+            pedidoVM.Inicializar(vm.PessoaSelecionada, true);
+
             pedidoWindow.ShowDialog();
-            vm.FiltrarPedidos(); 
+            vm.FiltrarPedidos();
         }
     }
-    
 }

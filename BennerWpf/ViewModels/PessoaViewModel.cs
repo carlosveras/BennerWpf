@@ -1,5 +1,6 @@
 ﻿using BennerWpf.Models;
 using BennerWpf.Services;
+using BennerWpf.Views;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -13,12 +14,35 @@ namespace BennerWpf.ViewModels;
 public class PessoaViewModel : INotifyPropertyChanged
 {
     private readonly DataService<Pessoa> _service = new("pessoas.json");
+    private readonly DataService<Pedido> _pedidoService = new("pedidos.json");
 
     public ObservableCollection<Pessoa> Pessoas { get; set; } = new();
-    public Pessoa PessoaSelecionada { get; set; } = new();
 
-    public ObservableCollection<Pedido> PedidosDaPessoa { get; set; } = new();
-    private readonly DataService<Pedido> _pedidoService = new("pedidos.json");
+    private Pessoa _pessoaSelecionada;
+    public Pessoa PessoaSelecionada
+    {
+        get => _pessoaSelecionada;
+        set
+        {
+            if (_pessoaSelecionada != value)
+            {
+                _pessoaSelecionada = value;
+                OnPropertyChanged();
+                FiltrarPedidos();
+            }
+        }
+    }
+
+    private ObservableCollection<Pedido> _pedidosDaPessoa = new();
+    public ObservableCollection<Pedido> PedidosDaPessoa
+    {
+        get => _pedidosDaPessoa;
+        set
+        {
+            _pedidosDaPessoa = value;
+            OnPropertyChanged();
+        }
+    }
 
     private bool _mostrarEntregues, _mostrarPagos, _mostrarPendentes;
 
@@ -36,22 +60,6 @@ public class PessoaViewModel : INotifyPropertyChanged
     {
         get => _mostrarPendentes;
         set { _mostrarPendentes = value; FiltrarPedidos(); OnPropertyChanged(); }
-    }
-    public void FiltrarPedidos()
-    {
-        if (PessoaSelecionada == null) return;
-
-        var todos = _pedidoService.Load().Where(p => p.Pessoa.Id == PessoaSelecionada.Id);
-
-        if (MostrarEntregues)
-            todos = todos.Where(p => p.Status == StatusPedido.Recebido);
-        else if (MostrarPagos)
-            todos = todos.Where(p => p.Status == StatusPedido.Pago);
-        else if (MostrarPendentes)
-            todos = todos.Where(p => p.Status == StatusPedido.Pendente);
-
-        PedidosDaPessoa = new ObservableCollection<Pedido>(todos);
-        OnPropertyChanged(nameof(PedidosDaPessoa));
     }
 
     private string _filtroNome;
@@ -71,34 +79,38 @@ public class PessoaViewModel : INotifyPropertyChanged
     public ICommand IncluirCommand { get; }
     public ICommand SalvarCommand { get; }
     public ICommand ExcluirCommand { get; }
+    public ICommand IncluirPedidoCommand => new RelayCommand(_ => AbrirTelaPedido(), _ => PessoaSelecionada != null);
 
     public ICommand MarcarPagoCommand => new RelayCommand(p => AtualizarStatus(p, StatusPedido.Pago));
     public ICommand MarcarEnviadoCommand => new RelayCommand(p => AtualizarStatus(p, StatusPedido.Enviado));
     public ICommand MarcarRecebidoCommand => new RelayCommand(p => AtualizarStatus(p, StatusPedido.Recebido));
 
-
-    private void AtualizarStatus(object pedidoObj, StatusPedido novoStatus)
-    {
-        if (pedidoObj is Pedido pedido)
-        {
-            var pedidos = _pedidoService.Load();
-            var atual = pedidos.FirstOrDefault(p => p.Id == pedido.Id);
-            if (atual != null)
-            {
-                atual.Status = novoStatus;
-                _pedidoService.Save(pedidos);
-                FiltrarPedidos();
-            }
-        }
-    }
-
     public PessoaViewModel()
     {
         CarregarDados();
-
         IncluirCommand = new RelayCommand(_ => Incluir());
         SalvarCommand = new RelayCommand(_ => Salvar());
         ExcluirCommand = new RelayCommand(_ => Excluir());
+    }
+
+    public void Inicializar(Pessoa pessoa)
+    {
+        var pessoasCarregadas = _service.Load();
+        Pessoas = new ObservableCollection<Pessoa>(pessoasCarregadas);
+        OnPropertyChanged(nameof(Pessoas));
+
+        var pessoaNaLista = Pessoas.FirstOrDefault(p => p.Id == pessoa.Id);
+        PessoaSelecionada = pessoaNaLista;
+        OnPropertyChanged(nameof(PessoaSelecionada));
+
+        FiltrarPedidos();
+    }
+
+    private void AbrirTelaPedido()
+    {
+        var janela = new PedidoView();
+        janela.ShowDialog();
+        FiltrarPedidos();
     }
 
     private void CarregarDados()
@@ -115,8 +127,28 @@ public class PessoaViewModel : INotifyPropertyChanged
             (string.IsNullOrWhiteSpace(FiltroCPF) || p.CPF.Contains(FiltroCPF))
         ).ToList();
 
-        Pessoas = new ObservableCollection<Pessoa>(lista); //avisa a interface gráfica sempre que ela é alterada
-        OnPropertyChanged(nameof(Pessoas));
+        Pessoas.Clear();
+        foreach (var pessoa in lista)
+            Pessoas.Add(pessoa);
+    }
+
+    public void FiltrarPedidos()
+    {
+        if (PessoaSelecionada == null)
+        {
+            PedidosDaPessoa = new ObservableCollection<Pedido>();
+            return;
+        }
+
+        var todos = _pedidoService.Load().Where(p => p.Pessoa.Id == PessoaSelecionada.Id);
+
+        var filtrados = todos.Where(p =>
+            (!MostrarEntregues || p.Status == StatusPedido.Recebido) &&
+            (!MostrarPagos || p.Status == StatusPedido.Pago) &&
+            (!MostrarPendentes || p.Status == StatusPedido.Pendente)
+        );
+
+        PedidosDaPessoa = new ObservableCollection<Pedido>(filtrados);
     }
 
     private void Incluir()
@@ -127,8 +159,11 @@ public class PessoaViewModel : INotifyPropertyChanged
 
     private void Salvar()
     {
-        var lista = _service.Load();
-        var existente = lista.FirstOrDefault(p => p.Id == PessoaSelecionada.Id);
+        if (PessoaSelecionada == null)
+        {
+            MessageBox.Show("Nenhuma pessoa selecionada.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
 
         if (!CpfValidator.IsValid(PessoaSelecionada.CPF))
         {
@@ -136,6 +171,8 @@ public class PessoaViewModel : INotifyPropertyChanged
             return;
         }
 
+        var lista = _service.Load();
+        var existente = lista.FirstOrDefault(p => p.Id == PessoaSelecionada.Id);
 
         if (existente != null)
         {
@@ -153,10 +190,31 @@ public class PessoaViewModel : INotifyPropertyChanged
 
     private void Excluir()
     {
+        if (PessoaSelecionada == null)
+        {
+            MessageBox.Show("Nenhuma pessoa selecionada.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
         var lista = _service.Load();
         lista.RemoveAll(p => p.Id == PessoaSelecionada.Id);
         _service.Save(lista);
         CarregarDados();
+    }
+
+    private void AtualizarStatus(object pedidoObj, StatusPedido novoStatus)
+    {
+        if (pedidoObj is Pedido pedido)
+        {
+            var pedidos = _pedidoService.Load();
+            var atual = pedidos.FirstOrDefault(p => p.Id == pedido.Id);
+            if (atual != null)
+            {
+                atual.Status = novoStatus;
+                _pedidoService.Save(pedidos);
+                FiltrarPedidos();
+            }
+        }
     }
 
     public event PropertyChangedEventHandler PropertyChanged;

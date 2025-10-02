@@ -19,17 +19,39 @@ public class PedidoViewModel : INotifyPropertyChanged
     public ObservableCollection<Produto> Produtos { get; set; }
     public ObservableCollection<ItemPedido> ItensPedido { get; set; } = new();
 
-    public Pessoa PessoaSelecionada { get; set; }
+    //public Pessoa PessoaSelecionada { get; set; }
     public Produto ProdutoSelecionado { get; set; }
     public int QuantidadeProduto { get; set; } = 1;
+
+    //public bool PessoaBloqueada { get; set; } = false;
 
     public FormaPagamento FormaPagamentoSelecionada { get; set; }
     public decimal ValorTotal => ItensPedido.Sum(i => i.Subtotal);
 
     public ICommand AdicionarProdutoCommand { get; }
     public ICommand FinalizarPedidoCommand { get; }
-   
-   
+
+    private Pessoa _pessoaSelecionada;
+    public Pessoa PessoaSelecionada
+    {
+        get => _pessoaSelecionada;
+        set
+        {
+            _pessoaSelecionada = value;
+            OnPropertyChanged();
+        }
+    }
+
+    private bool _pessoaBloqueada;
+    public bool PessoaBloqueada
+    {
+        get => _pessoaBloqueada;
+        set
+        {
+            _pessoaBloqueada = value;
+            OnPropertyChanged();
+        }
+    }
 
     public PedidoViewModel()
     {
@@ -73,6 +95,37 @@ public class PedidoViewModel : INotifyPropertyChanged
         ItensPedido.Clear();
         OnPropertyChanged(nameof(ValorTotal));
     }
+
+    //public void Inicializar(Pessoa pessoa, bool bloquear)
+    //{
+    //    PessoaBloqueada = bloquear;
+    //    OnPropertyChanged(nameof(PessoaBloqueada));
+
+    //    var pessoasCarregadas = _pessoaService.Load();
+    //    Pessoas = new ObservableCollection<Pessoa>(pessoasCarregadas);
+    //    OnPropertyChanged(nameof(Pessoas));
+
+    //    // Sincroniza instância da pessoa
+    //    var pessoaNaLista = Pessoas.FirstOrDefault(p => p.Id == pessoa.Id);
+    //    PessoaSelecionada = pessoaNaLista ?? pessoa;
+    //}
+
+    public void Inicializar(Pessoa pessoa, bool bloquear)
+    {
+        PessoaBloqueada = bloquear;
+        OnPropertyChanged(nameof(PessoaBloqueada));
+
+        var pessoasCarregadas = _pessoaService.Load();
+        Pessoas = new ObservableCollection<Pessoa>(pessoasCarregadas);
+        OnPropertyChanged(nameof(Pessoas));
+
+        // IMPORTANTE: só atribui após carregar a lista
+        var pessoaNaLista = Pessoas.FirstOrDefault(p => p.Id == pessoa.Id);
+        PessoaSelecionada = pessoaNaLista;
+        OnPropertyChanged(nameof(PessoaSelecionada));
+    }
+
+
 
     public event PropertyChangedEventHandler PropertyChanged;
     private void OnPropertyChanged([CallerMemberName] string name = null) =>
