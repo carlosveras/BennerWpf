@@ -12,4 +12,10 @@ public partial class PedidoView : Window
         WindowState = WindowState.Maximized;
     }
 
+    private void Inicio_Click(object sender, RoutedEventArgs e)
+    {
+        var mainWindow = new MainWindow();
+        mainWindow.Show();
+        this.Close();
+    }
 }

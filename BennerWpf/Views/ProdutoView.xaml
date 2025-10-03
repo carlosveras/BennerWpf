@@ -82,8 +82,10 @@
                         Command="{Binding IncluirCommand}" />
                     <Button Content="Salvar" Width="80" Margin="0,0,10,0"
                         Command="{Binding SalvarCommand}" />
-                    <Button Content="Excluir" Width="80"
+                    <Button Content="Excluir" Width="80" Margin="0,0,10,0"
                         Command="{Binding ExcluirCommand}" />
+                    <Button Content="Inicio" Width="80" Margin="0,0,10,0"
+                       Click="Inicio_Click" />
                 </StackPanel>
             </Grid>
         </GroupBox>

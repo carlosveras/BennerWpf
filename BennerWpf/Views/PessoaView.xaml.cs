@@ -27,4 +27,11 @@ public partial class PessoaView : Window
             vm.FiltrarPedidos();
         }
     }
+
+    private void Inicio_Click(object sender, RoutedEventArgs e)
+    {
+        var mainWindow = new MainWindow();
+        mainWindow.Show();
+        this.Close();
+    }
 }

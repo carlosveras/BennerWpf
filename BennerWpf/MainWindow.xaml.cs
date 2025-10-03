@@ -15,17 +15,22 @@ namespace BennerWpf
         {
             var pessoas = new PessoaView();
             pessoas.ShowDialog();
+            this.Close();
+
         }
 
         private void AbrirProdutos_Click(object sender, RoutedEventArgs e)
         {
             var produtos = new ProdutoView();
+            this.Close();
             produtos.ShowDialog();
+
         }
 
         private void AbrirPedidos_Click(object sender, RoutedEventArgs e)
         {
             var pedidos = new PedidoView();
+            this.Close(); 
             pedidos.ShowDialog();
         }
 

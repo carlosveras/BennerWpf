@@ -16,26 +16,6 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Seleção de Pessoa -->
-        
-
-        <!--<ComboBox Grid.Row="0" Width="300" Margin="0 0 0 10"
-          ItemsSource="{Binding Pessoas}"
-          SelectedItem="{Binding PessoaSelecionada}"
-          DisplayMemberPath="Nome"
-          IsEnabled="{Binding PessoaBloqueada, Converter={StaticResource InverseBoolConverter}}" />-->
-
-        <!--<ComboBox ItemsSource="{Binding Pessoas}"
-          SelectedItem="{Binding PessoaSelecionada}"
-          IsEnabled="{Binding PessoaBloqueada, Converter={StaticResource InverseBoolConverter}}"
-          Width="300" Margin="0 0 0 10">
-            <ComboBox.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock Text="{Binding Nome}" />
-                </DataTemplate>
-            </ComboBox.ItemTemplate>
-        </ComboBox>-->
-
         <ComboBox ItemsSource="{Binding Pessoas}"
           SelectedItem="{Binding PessoaSelecionada}"
           IsEnabled="{Binding PessoaBloqueada, Converter={StaticResource InverseBoolConverter}}"
@@ -46,12 +26,6 @@
                 </DataTemplate>
             </ComboBox.ItemTemplate>
         </ComboBox>
-
-
-
-
-
-
 
         <!-- Adição de Produtos -->
         <StackPanel Grid.Row="1" Orientation="Vertical">
@@ -85,8 +59,10 @@
             </ComboBox>
             <TextBlock Text="Valor Total:" VerticalAlignment="Center" Margin="10 0 0 0"/>
             <TextBlock Text="{Binding ValorTotal}" VerticalAlignment="Center" Margin="5 0 10 0"/>
-            <Button Content="Finalizar Pedido" Width="150"
+            <Button Content="Finalizar Pedido" Width="150" Margin="0,0,10,0"
                     Command="{Binding FinalizarPedidoCommand}" />
+            <Button Content="Inicio" Width="80" Margin="0,0,10,0"
+                   Click="Inicio_Click" />
         </StackPanel>
         
     </Grid>
