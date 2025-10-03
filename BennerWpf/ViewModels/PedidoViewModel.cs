@@ -19,11 +19,8 @@ public class PedidoViewModel : INotifyPropertyChanged
     public ObservableCollection<Produto> Produtos { get; set; }
     public ObservableCollection<ItemPedido> ItensPedido { get; set; } = new();
 
-    //public Pessoa PessoaSelecionada { get; set; }
     public Produto ProdutoSelecionado { get; set; }
     public int QuantidadeProduto { get; set; } = 1;
-
-    //public bool PessoaBloqueada { get; set; } = false;
 
     public FormaPagamento FormaPagamentoSelecionada { get; set; }
     public decimal ValorTotal => ItensPedido.Sum(i => i.Subtotal);
